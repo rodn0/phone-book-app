@@ -1,21 +1,16 @@
-import { ApolloCache, DefaultContext, FetchResult, MutationFunctionOptions, OperationVariables, useMutation, useQuery } from "@apollo/client";
-import React, { createContext, PropsWithChildren, useEffect, useState } from "react";
-import { CREATE_CONTACT, DELETE_CONTACT } from "../../api/Mutation/contact/contact.mutation";
+import { useMutation, useQuery } from "@apollo/client";
+import { createContext, PropsWithChildren } from "react";
+import { ADD_CONTACT, DELETE_CONTACT, UPDATE_CONTACT } from "../../api/Mutation/contact/contact.mutation";
 import { GET_CONTACTS } from "../../api/Queries/contact/contact.queries";
-import { ContactInterface } from "../../types/contactTypes";
+import { ContactInput, ContactInterface } from "../../types/contactTypes";
 
 interface ContactContextProps {
   data?: [ContactInterface];
   search?: (n: string) => void;
   loading?: boolean;
-  create?: (contact: CreateContactInput) => void; 
+  add?: (contact: ContactInput, fn: (finishedAdding: boolean) => void) => void; 
   delete?: (id: string) => void;
-}
-
-interface CreateContactInput {
-  firstName: string;
-  lastName: string;
-  number: string;
+  update?: (id: string, contact: ContactInput, fn: (finishedUpdating: boolean) => void) => void; 
 }
 
 export const ContactContext = createContext<ContactContextProps>({});
@@ -25,20 +20,34 @@ export const ContactProvider = ({ children }: PropsWithChildren) => {
     variables: {}
   });
 
-  const [createContact, { loading: createLoading }] = useMutation<{createContact: CreateContactInput }>(CREATE_CONTACT);
+  const [addContact, { loading: addLoading }] = useMutation<{addContact: ContactInput }>(ADD_CONTACT);
+  const [updateContact, { loading: updateLoading }] = useMutation<{updateContact: ContactInput }>(UPDATE_CONTACT);
   const [deleteContact, { loading: deleteLoading }] = useMutation<{deleteContact: string}>(DELETE_CONTACT);
 
   const handleSearch = (lastName: string) => {
     refetch({ lastName })
   }
 
-  const handleCreate = (input: CreateContactInput) => {
-    createContact({
+  const handleAdd = (input: ContactInput, callback: (finishedAdding: boolean) => void) => {
+    addContact({
       variables: {
         input
       }
     }).then(() => {
       refetch();
+      callback(true);
+    })
+  }
+
+  const handleUpdate = (id: string, input: ContactInput, callback: (finishedUpdating: boolean) => void) => {
+    updateContact({
+      variables: {
+        updateContactId: id,
+        input
+      }
+    }).then(() => {
+      refetch();
+      callback(true);
     })
   }
 
@@ -50,10 +59,11 @@ export const ContactProvider = ({ children }: PropsWithChildren) => {
 
   const contextProps: ContactContextProps = {
     data: data?.contacts,
-    loading: loading || createLoading || deleteLoading,
+    loading: loading || addLoading || deleteLoading || updateLoading,
     search: handleSearch,
-    create: handleCreate,
-    delete: handleDelete
+    add: handleAdd,
+    delete: handleDelete,
+    update: handleUpdate
   }
 
   return (

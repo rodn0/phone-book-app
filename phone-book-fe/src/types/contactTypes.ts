@@ -4,3 +4,5 @@ export interface ContactInterface {
   lastName: string;
   number: string;
 }
+
+export interface ContactInput extends Omit<ContactInterface, "_id"> {}

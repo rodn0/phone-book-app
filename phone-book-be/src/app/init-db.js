@@ -7,7 +7,7 @@ require('dotenv').config();
 const mongoose_1 = __importDefault(require("mongoose"));
 const DATABASE_URL = process.env.DATABASE_URL;
 const initializeMongo = () => {
-    console.log('Connecting to mongodb');
+    console.log('Connecting to mongodb...');
     mongoose_1.default.connect(DATABASE_URL, err => {
         if (err) {
             console.error('Connection to DB failed');

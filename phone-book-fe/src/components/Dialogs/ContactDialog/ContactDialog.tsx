@@ -1,22 +1,52 @@
 import { Backdrop, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControl, FormGroup, TextField } from "@mui/material";
-import { FC, useContext, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
+import { ContactDialogMode } from "../../../enums/contactDialogMode.enum";
+import { ContactInterface } from "../../../types/contactTypes";
 import { ContactContext } from "../../ContactProvider/ContactProvider";
 
-interface CreateContactDialogProps {
+interface ContactDialogProps {
   open: boolean;
   handleClose: () => void;
+  contact: ContactInterface | undefined,
+  mode: string
 }
 
-const CreateContactDialog:FC<CreateContactDialogProps> = ({ open, handleClose }) => {
+const ContactDialog:FC<ContactDialogProps> = ({ open, handleClose, contact, mode }) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [number, setNumber] = useState('');
 
   const contactContext = useContext(ContactContext);
 
-  const handleCreate = () => {
-    if(contactContext.create) {
-      contactContext.create({firstName, lastName, number });
+  useEffect(() => {
+    if(mode === ContactDialogMode.UPDATE) {
+      setFirstName(contact?.firstName as string);
+      setLastName(contact?.lastName as string);
+      setNumber(contact?.number as string);
+    } else {
+      setFirstName('');
+      setLastName('');
+      setNumber('');
+    }
+  }, [mode])
+
+  const handleAdd = () => {
+    if(contactContext.add) {
+      contactContext.add({firstName, lastName, number }, (completed) => {
+        if(completed) {
+          handleClose();
+        }
+      });
+    }
+  }
+
+  const handleUpdate = () => {
+    if(contactContext.update) {
+      contactContext.update(contact?._id as string, {firstName, lastName, number }, (completed: boolean) => {
+        if(completed) {
+          handleClose();
+        }
+      })
     }
   }
 
@@ -24,17 +54,18 @@ const CreateContactDialog:FC<CreateContactDialogProps> = ({ open, handleClose })
     <Dialog
       open={open}
       onClose={handleClose}
-      aria-labelledby="create-contact-dialog"
+      aria-labelledby="add-contact-dialog"
       maxWidth="sm"
       fullWidth
     >
       <DialogTitle id="responsive-dialog-title">
-        {"Create Contact"}
+        {mode === ContactDialogMode.ADD ? "Add Contact" : "Update Contact" }
       </DialogTitle>
       <DialogContent>
         <FormGroup>
           <TextField 
             name="firstName" 
+            value={firstName}
             variant="standard" 
             label="Enter First Name" 
             onChange={(e) => setFirstName(e.target.value)}
@@ -44,6 +75,7 @@ const CreateContactDialog:FC<CreateContactDialogProps> = ({ open, handleClose })
         <FormGroup>
           <TextField 
             name="lastName" 
+            value={lastName}
             variant="standard" 
             label="Enter Last Name" 
             onChange={(e) => setLastName(e.target.value)}
@@ -53,6 +85,7 @@ const CreateContactDialog:FC<CreateContactDialogProps> = ({ open, handleClose })
         <FormGroup>
           <TextField 
             name="number" 
+            value={number}
             variant="standard" 
             label="Enter number" 
             onChange={(e) => setNumber(e.target.value)}
@@ -64,8 +97,8 @@ const CreateContactDialog:FC<CreateContactDialogProps> = ({ open, handleClose })
         <Button autoFocus onClick={handleClose}>
           Cancel
         </Button>
-        <Button onClick={handleCreate} autoFocus>
-          Create
+        <Button onClick={mode === ContactDialogMode.ADD ? handleAdd : handleUpdate } autoFocus>
+          { mode === ContactDialogMode.ADD ? "Add" : "Update" }
         </Button>
       </DialogActions>
       <Backdrop open={contactContext?.loading as boolean}>
@@ -75,4 +108,4 @@ const CreateContactDialog:FC<CreateContactDialogProps> = ({ open, handleClose })
   )
 };
 
-export default CreateContactDialog;
+export default ContactDialog;

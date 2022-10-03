@@ -3,15 +3,18 @@ import { useContext, useState } from "react";
 import BaseLayout from "../../components/BaseLayout/BaseLayout";
 import ContactItem from "../../components/ContactItem/ContactItem";
 import { ContactContext } from "../../components/ContactProvider/ContactProvider";
-import CreateContactDialog from "../../components/Dialogs/CreateContact/CreateContect";
+import ContactDialog from "../../components/Dialogs/ContactDialog/ContactDialog";
 import SearchInput from "../../components/SearchInput/SearchInput";
+import { ContactDialogMode } from "../../enums/contactDialogMode.enum";
+import { ContactInterface } from "../../types/contactTypes";
 
 const Contact = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editableContact, setEditableContact] = useState<ContactInterface>();
+  const [mode, setMode] = useState('')
   const contactContext = useContext(ContactContext);
   
   const contactData = contactContext.data ? contactContext.data : [];
-  const searchOptions = contactData.map(contact => contact.lastName);
   
   const handleCloseCreateDialog = () => {
     setShowCreateDialog(false);
@@ -29,6 +32,17 @@ const Contact = () => {
     }
   }
 
+  const handleShowUpdateDialog = (contact: ContactInterface) => {
+    setEditableContact(contact);
+    setMode(ContactDialogMode.UPDATE);
+    setShowCreateDialog(true);
+  }
+
+  const handleShowAddContactDialog = () => {
+    setMode(ContactDialogMode.ADD);
+    setShowCreateDialog(true);
+  }
+
   return (
     <BaseLayout>
       <Box mb={2}>
@@ -37,7 +51,7 @@ const Contact = () => {
             <Typography variant="h5" fontWeight="Bold">Contact</Typography>
           </Grid>
           <Grid item xs={4} display="flex" justifyContent="flex-end">
-            <Button variant="contained" onClick={() => setShowCreateDialog(true)}>{`+ Add Contact`}</Button>
+            <Button variant="contained" onClick={handleShowAddContactDialog}>{`+ Add Contact`}</Button>
           </Grid>
         </Grid>
       </Box>
@@ -46,10 +60,10 @@ const Contact = () => {
       </Box>
       <Box>
         {
-          contactData?.map(d => <ContactItem contact={d} onDelete={handleDelete}/>)
+          contactData?.map(d => <ContactItem contact={d} onDelete={handleDelete} onUpdate={handleShowUpdateDialog}/>)
         }
       </Box>
-      <CreateContactDialog open={showCreateDialog} handleClose={handleCloseCreateDialog} />
+      <ContactDialog open={showCreateDialog} handleClose={handleCloseCreateDialog} contact={editableContact} mode={mode}/>
       <Backdrop open={contactContext.loading as boolean}>
         <CircularProgress />
       </Backdrop>
