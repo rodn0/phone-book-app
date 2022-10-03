@@ -1,0 +1,1 @@
+export { registerSchemas } from "./schema";

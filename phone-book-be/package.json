@@ -1,0 +1,32 @@
+{
+  "name": "phone-book-be",
+  "version": "1.0.0",
+  "description": "simple phone book application",
+  "main": "server.ts",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "build": "tsc",
+    "prestart": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/lodash": "^4.14.186",
+    "@types/mongoose": "^5.11.97",
+    "apollo-server-core": "^3.10.2",
+    "apollo-server-express": "^3.10.2",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.1",
+    "graphql-tools": "7.0.5",
+    "lodash": "^4.17.21",
+    "mongoose": "^6.6.2",
+    "mongoose-paginate-v2": "^1.7.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.14",
+    "@types/node": "^18.7.23",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  }
+}
